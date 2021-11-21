@@ -17,6 +17,7 @@ from ..services.negativo import negativo
 from ..services.esc_log import escalaLogaritmica
 from ..services.gamma_correction import gammaCorrection
 from ..services.convolucao import convolucao
+from ..services.histograma import histograma
 
 
 index = Blueprint("init", __name__)
@@ -207,6 +208,45 @@ def convolucaoRoute():
     img = cv2.imdecode(nparr, cv2.IMREAD_COLOR)
 
     img = convolucao(img, matriz)
+
+    _, buffer = cv2.imencode(f'.{imagem.filename.split(".")[-1]}', img)
+    response = make_response(buffer.tobytes())
+    response.headers['Content-Type'] = imagem.mimetype
+    return response
+
+
+@index.route('/api/histograma', methods=['POST'])
+def histogramaRoute():
+    """."""
+    parser = RequestParser()
+    parser.add_argument(
+        "imagem",
+        type=FileStorage,
+        help='Arquivo deve ser enviado!',
+        location='files',
+        required=True
+    )
+    parser.add_argument(
+        "mostraHistograma",
+        type=int,
+        default=0
+    )
+    parser.add_argument(
+        "equalizar",
+        type=int,
+        default=0
+    )
+    p = parser.parse_args()
+    imagem = p['imagem']
+    mostraHistograma = p['mostraHistograma']
+    equalizar = p['equalizar']
+
+    # convert string of image data to uint8
+    nparr = np.fromstring(imagem.read(), np.uint8)
+    # decode image
+    img = cv2.imdecode(nparr, cv2.IMREAD_COLOR)
+
+    img = histograma(img, mostraHistograma, equalizar)
 
     _, buffer = cv2.imencode(f'.{imagem.filename.split(".")[-1]}', img)
     response = make_response(buffer.tobytes())
