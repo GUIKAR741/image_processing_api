@@ -13,11 +13,18 @@ from werkzeug.datastructures import FileStorage
 from ..util.reqparser import RequestParser
 from ..services.grayscalePonderado import grayscalePonderado
 from ..services.grayscaleMedia import grayscaleMedia
+from ..services.blackAndWhite import blackAndWhite
 from ..services.negativo import negativo
 from ..services.esc_log import escalaLogaritmica
 from ..services.gamma_correction import gammaCorrection
 from ..services.convolucao import convolucao
 from ..services.histograma import histograma
+from ..services.estenografia import (
+    estenografiaLSB,
+    estenografiaLSBDecrypt,
+    estenografia,
+    estenografiaDecrypt
+)
 
 
 index = Blueprint("init", __name__)
@@ -68,6 +75,32 @@ def grayscaleMediaRoute():
     img = cv2.imdecode(nparr, cv2.IMREAD_COLOR)
 
     img = grayscaleMedia(img)
+
+    _, buffer = cv2.imencode('.png', img)
+    response = make_response(buffer.tobytes())
+    response.headers['Content-Type'] = imagem.mimetype
+    return response
+
+
+@index.route('/api/blackAndWhite', methods=['POST'])
+def blackAndWhiteRoute():
+    """."""
+    parser = RequestParser()
+    parser.add_argument(
+        "imagem",
+        type=FileStorage,
+        help='Arquivo deve ser enviado!',
+        location='files',
+        required=True
+    )
+    p = parser.parse_args()
+    imagem = p['imagem']
+    # convert string of image data to uint8
+    nparr = np.fromstring(imagem.read(), np.uint8)
+    # decode image
+    img = cv2.imdecode(nparr, cv2.IMREAD_COLOR)
+
+    img = blackAndWhite(img)
 
     _, buffer = cv2.imencode('.png', img)
     response = make_response(buffer.tobytes())
@@ -251,4 +284,55 @@ def histogramaRoute():
     _, buffer = cv2.imencode(f'.{imagem.filename.split(".")[-1]}', img)
     response = make_response(buffer.tobytes())
     response.headers['Content-Type'] = imagem.mimetype
+    return response
+
+
+@index.route('/api/estenografia', methods=['POST'])
+def estenografiaRoute():
+    """."""
+    parser = RequestParser()
+    parser.add_argument(
+        "imagem1",
+        type=FileStorage,
+        help='Arquivo deve ser enviado!',
+        location='files',
+        required=True
+    )
+    parser.add_argument(
+        "imagem2",
+        type=FileStorage,
+        help='Arquivo deve ser enviado!',
+        location='files',
+        required=True
+    )
+    parser.add_argument(
+        "tipo",
+        type=int,
+        default=1,
+        required=True
+    )
+    p = parser.parse_args()
+    imagem1 = p['imagem1']
+    imagem2 = p['imagem2']
+    tipo = p["tipo"]
+
+    # convert string of image data to uint8
+    nparr1 = np.fromstring(imagem1.read(), np.uint8)
+    nparr2 = np.fromstring(imagem2.read(), np.uint8)
+    # decode image
+    img1 = cv2.imdecode(nparr1, cv2.IMREAD_COLOR)
+    img2 = cv2.imdecode(nparr2, cv2.IMREAD_COLOR)
+
+    if tipo == 1:
+        img = estenografiaLSB(img1, img2)
+    elif tipo == 2:
+        img = estenografiaLSBDecrypt(img1)
+    elif tipo == 3:
+        img = estenografia(img1, img2)
+    elif tipo == 4:
+        img = estenografiaDecrypt(img1)
+
+    _, buffer = cv2.imencode(f'.{imagem1.filename.split(".")[-1]}', img)
+    response = make_response(buffer.tobytes())
+    response.headers['Content-Type'] = imagem1.mimetype
     return response

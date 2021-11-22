@@ -65,6 +65,7 @@ def get_accumulated_proba(hist_proba):
 
 
 def get_new_gray_value(acc_proba):
+    """."""
     new_gray_value = {}
 
     for i in range(0, 256):
@@ -73,6 +74,7 @@ def get_new_gray_value(acc_proba):
 
 
 def equalize_hist(img, new_gray_value):
+    """."""
     for row in range(img.shape[0]):
         for column in range(img.shape[1]):
             img[row][column] = new_gray_value[str(int(img[row][column]))]
