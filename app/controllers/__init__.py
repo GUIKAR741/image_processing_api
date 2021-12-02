@@ -15,6 +15,7 @@ from ..services.grayscalePonderado import grayscalePonderado
 from ..services.grayscaleMedia import grayscaleMedia
 from ..services.blackAndWhite import blackAndWhite
 from ..services.negativo import negativo
+from ..services.hsv import hsv, rgbTohsv
 from ..services.esc_log import escalaLogaritmica
 from ..services.gamma_correction import gammaCorrection
 from ..services.convolucao import convolucao
@@ -132,6 +133,64 @@ def negativoRoute():
     response = make_response(buffer.tobytes())
     response.headers['Content-Type'] = imagem.mimetype
     return response
+
+
+@index.route('/api/hsv', methods=['POST'])
+def hsvRoute():
+    """."""
+    parser = RequestParser()
+    parser.add_argument(
+        "imagem",
+        type=FileStorage,
+        help='Arquivo deve ser enviado!',
+        location='files',
+        required=True
+    )
+    p = parser.parse_args()
+    imagem = p['imagem']
+    # convert string of image data to uint8
+    nparr = np.fromstring(imagem.read(), np.uint8)
+    # decode image
+    img = cv2.imdecode(nparr, cv2.IMREAD_COLOR)
+
+    img = hsv(img)
+
+    _, buffer = cv2.imencode('.png', img)
+    response = make_response(buffer.tobytes())
+    response.headers['Content-Type'] = imagem.mimetype
+    return response
+
+
+@index.route('/api/rgb2hsv', methods=['POST'])
+def rgb2hsvRoute():
+    """."""
+    parser = RequestParser()
+    parser.add_argument(
+        "r",
+        type=int,
+        help='Arquivo deve ser enviado!',
+        required=True
+    )
+    parser.add_argument(
+        "g",
+        type=int,
+        help='Arquivo deve ser enviado!',
+        required=True
+    )
+    parser.add_argument(
+        "b",
+        type=int,
+        help='Arquivo deve ser enviado!',
+        required=True
+    )
+    p = parser.parse_args()
+    r = p['r']
+    g = p['g']
+    b = p['b']
+
+    return jsonify(
+        rgbTohsv(r, g, b)
+    )
 
 
 @index.route('/api/log', methods=['POST'])
