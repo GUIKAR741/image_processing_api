@@ -5,12 +5,10 @@ from math import ceil
 
 def hsv(imagem):
     """."""
-    # imagem = cv2.cvtColor(imagem, cv2.COLOR_RGB2HSV)
-    # return imagem
     (width, height) = imagem.shape[0:2]
     for x in range(width):
         for y in range(height):
-            r, g, b = imagem[x, y] / 255
+            b, g, r = imagem[x, y] / 255
             cmax = max(r, g, b)
             cmin = min(r, g, b)
             delta = cmax - cmin
@@ -28,7 +26,7 @@ def hsv(imagem):
             h *= 60
             if h < 0:
                 h += 360
-            imagem[x, y] = [h, s * 255, v * 255]
+            imagem[x, y] = [(h / 360) * 255, s * 255, v * 255]
     return imagem
 
 

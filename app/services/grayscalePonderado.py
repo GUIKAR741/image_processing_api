@@ -1,5 +1,5 @@
 """."""
-import numpy as np
+
 
 def grayscalePonderado(imagem):
     """."""
@@ -8,6 +8,6 @@ def grayscalePonderado(imagem):
         for y in range(h):
             pxl = imagem[x, y]
             imagem[x, y] = int(
-                0.299 * pxl[0] + 0.587 * pxl[1] + 0.114 * pxl[2]
+                0.114 * pxl[0] + 0.587 * pxl[1] + 0.299 * pxl[2]
             )
     return imagem

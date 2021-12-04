@@ -20,6 +20,8 @@ from ..services.esc_log import escalaLogaritmica
 from ..services.gamma_correction import gammaCorrection
 from ..services.convolucao import convolucao
 from ..services.histograma import histograma
+from ..services.sepia import sepia
+from ..services.chromakey import chromakey
 from ..services.estenografia import (
     estenografiaLSB,
     estenografiaLSBDecrypt,
@@ -44,14 +46,14 @@ def grayscalePonderadoRoute():
     )
     p = parser.parse_args()
     imagem = p['imagem']
-    # convert string of image data to uint8
+    # converte string de dados da imagem para uint8
     nparr = np.fromstring(imagem.read(), np.uint8)
-    # decode image
+    # decodifica imagem
     img = cv2.imdecode(nparr, cv2.IMREAD_COLOR)
 
     img = grayscalePonderado(img)
 
-    _, buffer = cv2.imencode('.png', img)
+    _, buffer = cv2.imencode(f'.{imagem.filename.split(".")[-1]}', img)
     response = make_response(buffer.tobytes())
     response.headers['Content-Type'] = imagem.mimetype
     return response
@@ -70,14 +72,14 @@ def grayscaleMediaRoute():
     )
     p = parser.parse_args()
     imagem = p['imagem']
-    # convert string of image data to uint8
+    # converte string de dados da imagem para uint8
     nparr = np.fromstring(imagem.read(), np.uint8)
-    # decode image
+    # decodifica imagem
     img = cv2.imdecode(nparr, cv2.IMREAD_COLOR)
 
     img = grayscaleMedia(img)
 
-    _, buffer = cv2.imencode('.png', img)
+    _, buffer = cv2.imencode(f'.{imagem.filename.split(".")[-1]}', img)
     response = make_response(buffer.tobytes())
     response.headers['Content-Type'] = imagem.mimetype
     return response
@@ -96,14 +98,94 @@ def blackAndWhiteRoute():
     )
     p = parser.parse_args()
     imagem = p['imagem']
-    # convert string of image data to uint8
+    # converte string de dados da imagem para uint8
     nparr = np.fromstring(imagem.read(), np.uint8)
-    # decode image
+    # decodifica imagem
     img = cv2.imdecode(nparr, cv2.IMREAD_COLOR)
 
     img = blackAndWhite(img)
 
-    _, buffer = cv2.imencode('.png', img)
+    _, buffer = cv2.imencode(f'.{imagem.filename.split(".")[-1]}', img)
+    response = make_response(buffer.tobytes())
+    response.headers['Content-Type'] = imagem.mimetype
+    return response
+
+
+@index.route('/api/sepia', methods=['POST'])
+def sepiaRoute():
+    """."""
+    parser = RequestParser()
+    parser.add_argument(
+        "imagem",
+        type=FileStorage,
+        help='Arquivo deve ser enviado!',
+        location='files',
+        required=True
+    )
+    p = parser.parse_args()
+    imagem = p['imagem']
+    # converte string de dados da imagem para uint8
+    nparr = np.fromstring(imagem.read(), np.uint8)
+    # decodifica imagem
+    img = cv2.imdecode(nparr, cv2.IMREAD_COLOR)
+
+    img = sepia(img)
+
+    _, buffer = cv2.imencode(f'.{imagem.filename.split(".")[-1]}', img)
+    response = make_response(buffer.tobytes())
+    response.headers['Content-Type'] = imagem.mimetype
+    return response
+
+
+@index.route('/api/chromakey', methods=['POST'])
+def chromakeyRoute():
+    """."""
+    parser = RequestParser()
+    parser.add_argument(
+        "imagem",
+        type=FileStorage,
+        help='Arquivo deve ser enviado!',
+        location='files',
+        required=True
+    )
+    parser.add_argument(
+        "r",
+        type=int,
+        help='Cor Vermelho deve ser enviada!',
+        required=True
+    )
+    parser.add_argument(
+        "g",
+        type=int,
+        help='Cor Verde deve ser enviada!',
+        required=True
+    )
+    parser.add_argument(
+        "b",
+        type=int,
+        help='Cor Azul deve ser enviada!',
+        required=True
+    )
+    parser.add_argument(
+        "d",
+        type=int,
+        help='Distancia deve ser enviada!',
+        required=True
+    )
+    p = parser.parse_args()
+    imagem = p['imagem']
+    r = p['r']
+    g = p['g']
+    b = p['b']
+    d = p['d']
+    # converte string de dados da imagem para uint8
+    nparr = np.fromstring(imagem.read(), np.uint8)
+    # decodifica imagem
+    img = cv2.imdecode(nparr, cv2.IMREAD_COLOR)
+
+    img = chromakey(img, r, g, b, d)
+
+    _, buffer = cv2.imencode(f'.{imagem.filename.split(".")[-1]}', img)
     response = make_response(buffer.tobytes())
     response.headers['Content-Type'] = imagem.mimetype
     return response
@@ -120,16 +202,22 @@ def negativoRoute():
         location='files',
         required=True
     )
+    parser.add_argument(
+        "isRGB",
+        type=int,
+        default=0
+    )
     p = parser.parse_args()
     imagem = p['imagem']
-    # convert string of image data to uint8
+    isRGB = p['isRGB']
+    # converte string de dados da imagem para uint8
     nparr = np.fromstring(imagem.read(), np.uint8)
-    # decode image
+    # decodifica imagem
     img = cv2.imdecode(nparr, cv2.IMREAD_COLOR)
 
-    img = negativo(img)
+    img = negativo(img, isRGB)
 
-    _, buffer = cv2.imencode('.png', img)
+    _, buffer = cv2.imencode(f'.{imagem.filename.split(".")[-1]}', img)
     response = make_response(buffer.tobytes())
     response.headers['Content-Type'] = imagem.mimetype
     return response
@@ -148,14 +236,14 @@ def hsvRoute():
     )
     p = parser.parse_args()
     imagem = p['imagem']
-    # convert string of image data to uint8
+    # converte string de dados da imagem para uint8
     nparr = np.fromstring(imagem.read(), np.uint8)
-    # decode image
+    # decodifica imagem
     img = cv2.imdecode(nparr, cv2.IMREAD_COLOR)
 
     img = hsv(img)
 
-    _, buffer = cv2.imencode('.png', img)
+    _, buffer = cv2.imencode(f'.{imagem.filename.split(".")[-1]}', img)
     response = make_response(buffer.tobytes())
     response.headers['Content-Type'] = imagem.mimetype
     return response
@@ -212,14 +300,14 @@ def escalaLogaritmicaRoute():
     p = parser.parse_args()
     imagem = p['imagem']
     contrast = p["contrast"]
-    # convert string of image data to uint8
+    # converte string de dados da imagem para uint8
     nparr = np.fromstring(imagem.read(), np.uint8)
-    # decode image
+    # decodifica imagem
     img = cv2.imdecode(nparr, cv2.IMREAD_COLOR)
 
     img = escalaLogaritmica(img, contrast)
 
-    _, buffer = cv2.imencode('.png', img)
+    _, buffer = cv2.imencode(f'.{imagem.filename.split(".")[-1]}', img)
     response = make_response(buffer.tobytes())
     response.headers['Content-Type'] = imagem.mimetype
     return response
@@ -251,9 +339,9 @@ def gammaCorrectionRoute():
     gamma = p["gamma"]
     contrast = p["contrast"]
 
-    # convert string of image data to uint8
+    # converte string de dados da imagem para uint8
     nparr = np.fromstring(imagem.read(), np.uint8)
-    # decode image
+    # decodifica imagem
     img = cv2.imdecode(nparr, cv2.IMREAD_COLOR)
 
     img = gammaCorrection(img, gamma, contrast)
@@ -294,9 +382,9 @@ def convolucaoRoute():
             "status": "Tamanho deve ser impar!",
         })
 
-    # convert string of image data to uint8
+    # converte string de dados da imagem para uint8
     nparr = np.fromstring(imagem.read(), np.uint8)
-    # decode image
+    # decodifica imagem
     img = cv2.imdecode(nparr, cv2.IMREAD_COLOR)
 
     img = convolucao(img, matriz)
@@ -328,17 +416,23 @@ def histogramaRoute():
         type=int,
         default=0
     )
+    parser.add_argument(
+        "isRGB",
+        type=int,
+        default=0
+    )
     p = parser.parse_args()
     imagem = p['imagem']
     mostraHistograma = p['mostraHistograma']
     equalizar = p['equalizar']
+    isRGB = p['isRGB']
 
-    # convert string of image data to uint8
+    # converte string de dados da imagem para uint8
     nparr = np.fromstring(imagem.read(), np.uint8)
-    # decode image
+    # decodifica imagem
     img = cv2.imdecode(nparr, cv2.IMREAD_COLOR)
 
-    img = histograma(img, mostraHistograma, equalizar)
+    img = histograma(img, mostraHistograma, equalizar, isRGB)
 
     _, buffer = cv2.imencode(f'.{imagem.filename.split(".")[-1]}', img)
     response = make_response(buffer.tobytes())
@@ -375,10 +469,10 @@ def estenografiaRoute():
     imagem2 = p['imagem2']
     tipo = p["tipo"]
 
-    # convert string of image data to uint8
+    # converte string de dados da imagem para uint8
     nparr1 = np.fromstring(imagem1.read(), np.uint8)
     nparr2 = np.fromstring(imagem2.read(), np.uint8)
-    # decode image
+    # decodifica imagem
     img1 = cv2.imdecode(nparr1, cv2.IMREAD_COLOR)
     img2 = cv2.imdecode(nparr2, cv2.IMREAD_COLOR)
 
