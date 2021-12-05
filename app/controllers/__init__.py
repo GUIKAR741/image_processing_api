@@ -22,6 +22,10 @@ from ..services.convolucao import convolucao
 from ..services.histograma import histograma
 from ..services.sepia import sepia
 from ..services.chromakey import chromakey
+from ..services.rotacao import rotacao
+from ..services.escala import escala
+from ..services.laplaciano import laplaciano
+from ..services.median import median
 from ..services.estenografia import (
     estenografiaLSB,
     estenografiaLSBDecrypt,
@@ -488,4 +492,148 @@ def estenografiaRoute():
     _, buffer = cv2.imencode(f'.{imagem1.filename.split(".")[-1]}', img)
     response = make_response(buffer.tobytes())
     response.headers['Content-Type'] = imagem1.mimetype
+    return response
+
+
+@index.route('/api/rotacao', methods=['POST'])
+def rotacaoRoute():
+    """."""
+    parser = RequestParser()
+    parser.add_argument(
+        "imagem",
+        type=FileStorage,
+        help='Arquivo deve ser enviado!',
+        location='files',
+        required=True
+    )
+    parser.add_argument(
+        "angulo",
+        type=int,
+        default=0
+    )
+    p = parser.parse_args()
+    imagem = p['imagem']
+    angulo = p['angulo']
+    # converte string de dados da imagem para uint8
+    nparr = np.fromstring(imagem.read(), np.uint8)
+    # decodifica imagem
+    img = cv2.imdecode(nparr, cv2.IMREAD_COLOR)
+
+    img = rotacao(img, angulo)
+
+    _, buffer = cv2.imencode(f'.{imagem.filename.split(".")[-1]}', img)
+    response = make_response(buffer.tobytes())
+    response.headers['Content-Type'] = imagem.mimetype
+    return response
+
+
+@index.route('/api/escala', methods=['POST'])
+def escalaRoute():
+    """."""
+    parser = RequestParser()
+    parser.add_argument(
+        "imagem",
+        type=FileStorage,
+        help='Arquivo deve ser enviado!',
+        location='files',
+        required=True
+    )
+    parser.add_argument(
+        "tipo",
+        type=int,
+        default=0
+    )
+    parser.add_argument(
+        "escalaX",
+        type=float,
+        default=0
+    )
+    parser.add_argument(
+        "escalaY",
+        type=float,
+        default=0
+    )
+    p = parser.parse_args()
+    imagem = p['imagem']
+    tipo = p['tipo']
+    escalaX = p['escalaX']
+    escalaY = p['escalaY']
+    # converte string de dados da imagem para uint8
+    nparr = np.fromstring(imagem.read(), np.uint8)
+    # decodifica imagem
+    img = cv2.imdecode(nparr, cv2.IMREAD_COLOR)
+
+    img = escala(img, escalaX, escalaY, tipo)
+
+    _, buffer = cv2.imencode(f'.{imagem.filename.split(".")[-1]}', img)
+    response = make_response(buffer.tobytes())
+    response.headers['Content-Type'] = imagem.mimetype
+    return response
+
+
+@index.route('/api/laplaciano', methods=['POST'])
+def laplacianoRoute():
+    """."""
+    parser = RequestParser()
+    parser.add_argument(
+        "imagem",
+        type=FileStorage,
+        help='Arquivo deve ser enviado!',
+        location='files',
+        required=True
+    )
+    parser.add_argument(
+        "bordas",
+        type=int,
+        default=0
+    )
+    p = parser.parse_args()
+    imagem = p['imagem']
+    bordas = p['bordas']
+    # converte string de dados da imagem para uint8
+    nparr = np.fromstring(imagem.read(), np.uint8)
+    # decodifica imagem
+    img = cv2.imdecode(nparr, cv2.IMREAD_COLOR)
+
+    img = laplaciano(img, bordas)
+
+    _, buffer = cv2.imencode(f'.{imagem.filename.split(".")[-1]}', img)
+    response = make_response(buffer.tobytes())
+    response.headers['Content-Type'] = imagem.mimetype
+    return response
+
+
+@index.route('/api/median', methods=['POST'])
+def medianRoute():
+    """."""
+    parser = RequestParser()
+    parser.add_argument(
+        "imagem",
+        type=FileStorage,
+        help='Arquivo deve ser enviado!',
+        location='files',
+        required=True
+    )
+    parser.add_argument(
+        "tamanho",
+        type=int,
+        default=0
+    )
+    p = parser.parse_args()
+    imagem = p['imagem']
+    tamanho = p['tamanho']
+    if tamanho % 2 == 0:
+        return jsonify({
+            "status": "Tamanho deve ser impar!",
+        })
+    # converte string de dados da imagem para uint8
+    nparr = np.fromstring(imagem.read(), np.uint8)
+    # decodifica imagem
+    img = cv2.imdecode(nparr, cv2.IMREAD_COLOR)
+
+    img = median(img, tamanho)
+
+    _, buffer = cv2.imencode(f'.{imagem.filename.split(".")[-1]}', img)
+    response = make_response(buffer.tobytes())
+    response.headers['Content-Type'] = imagem.mimetype
     return response
