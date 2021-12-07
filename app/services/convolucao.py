@@ -57,7 +57,7 @@ def convolve(img: np.array, kernel: np.array) -> np.array:
     return convolved_img
 
 
-def convolucao(imagem, matriz):
+def convolucao(imagem, matriz, normaliza=0):
     """."""
     imagem = cv2.cvtColor(imagem, cv2.COLOR_BGR2GRAY) / 255
     imagem = add_padding_to_image(
@@ -65,5 +65,4 @@ def convolucao(imagem, matriz):
         padding_width=get_padding_width_per_side(len(matriz))
     )
     imagem = convolve(imagem, matriz)
-    # imagem = cv2.filter2D(imagem, -1, matriz)
-    return negative_to_zero(imagem) * 255
+    return negative_to_zero(imagem) * 255 if normaliza == 0 else imagem

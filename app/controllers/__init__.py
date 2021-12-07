@@ -25,6 +25,7 @@ from ..services.chromakey import chromakey
 from ..services.rotacao import rotacao
 from ..services.escala import escala
 from ..services.laplaciano import laplaciano
+from ..services.sobel import sobel
 from ..services.median import median
 from ..services.estenografia import (
     estenografiaLSB,
@@ -596,6 +597,44 @@ def laplacianoRoute():
     img = cv2.imdecode(nparr, cv2.IMREAD_COLOR)
 
     img = laplaciano(img, bordas)
+
+    _, buffer = cv2.imencode(f'.{imagem.filename.split(".")[-1]}', img)
+    response = make_response(buffer.tobytes())
+    response.headers['Content-Type'] = imagem.mimetype
+    return response
+
+
+@index.route('/api/sobel', methods=['POST'])
+def sobelRoute():
+    """."""
+    parser = RequestParser()
+    parser.add_argument(
+        "imagem",
+        type=FileStorage,
+        help='Arquivo deve ser enviado!',
+        location='files',
+        required=True
+    )
+    parser.add_argument(
+        "bordas",
+        type=int,
+        default=0
+    )
+    parser.add_argument(
+        "normaliza",
+        type=int,
+        default=0
+    )
+    p = parser.parse_args()
+    imagem = p['imagem']
+    bordas = p['bordas']
+    normaliza = p['normaliza']
+    # converte string de dados da imagem para uint8
+    nparr = np.fromstring(imagem.read(), np.uint8)
+    # decodifica imagem
+    img = cv2.imdecode(nparr, cv2.IMREAD_COLOR)
+
+    img = sobel(img, bordas, normaliza)
 
     _, buffer = cv2.imencode(f'.{imagem.filename.split(".")[-1]}', img)
     response = make_response(buffer.tobytes())

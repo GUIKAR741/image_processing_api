@@ -23,7 +23,7 @@ def laplaciano(imagem, bordas):
                 [-1, 8, -1],
                 [-1, -1, -1],
             ]))
-    elif bordas == 3:
+    elif bordas == 2:
         imagem = convolucao(
             imagem,
             np.array([
@@ -31,8 +31,16 @@ def laplaciano(imagem, bordas):
                 [1, -4, 1],
                 [0, 1, 0],
             ]))
-    elif bordas == 4:
+    elif bordas == 3:
         imagem = convolucao(
+            imagem,
+            np.array([
+                [1, 1, 1],
+                [1, -8, 1],
+                [1, 1, 1],
+            ]))
+    elif bordas == 4:
+        imagem = imagem_original + convolucao(
             imagem,
             np.array([
                 [1, 1, 1],

@@ -26,9 +26,13 @@ def plot_hist(hist):
     """."""
     figure = plt.figure(figsize=(8, 6))
     axis = figure.add_subplot(1, 1, 1)
-    axis.bar(hist.keys(), hist.values(), color="red")
+    axis.bar(hist.keys(), list(map(lambda a: a / 255, hist.values())), color="red")
+    axis.plot(list(range(0, 256)), list(range(0, 256)), color="black")
     axis.set_xlabel("Níveis intensidade")
+    axis.set_xlim([0, 255])
+    axis.set_ylim([0, 255])
     axis.axes.xaxis.set_ticks([])
+    axis.axes.yaxis.set_ticks(list(range(0, 256, 15)))
     axis.grid(True)
     return figure
 
@@ -37,11 +41,15 @@ def plot_hist_rgb(r, g, b):
     """."""
     figure = plt.figure(figsize=(8, 6))
     axis = figure.add_subplot(1, 1, 1)
-    axis.bar(r.keys(), r.values(), color="blue")
-    axis.bar(g.keys(), g.values(), color="green")
-    axis.bar(b.keys(), b.values(), color="red")
+    axis.bar(r.keys(), list(map(lambda a: a / 255, r.values())), color="blue")
+    axis.bar(g.keys(), list(map(lambda a: a / 255, g.values())), color="green")
+    axis.bar(b.keys(), list(map(lambda a: a / 255, b.values())), color="red")
+    axis.plot(list(range(0, 256)), list(range(0, 256)), color="black")
     axis.set_xlabel("Níveis intensidade")
+    axis.set_xlim([0, 255])
+    axis.set_ylim([0, 255])
     axis.axes.xaxis.set_ticks([])
+    axis.axes.yaxis.set_ticks(list(range(0, 256, 15)))
     axis.grid(True)
     return figure
 
@@ -96,10 +104,7 @@ def processa_equalizacao(imagem, histograma, isRGB=0, ind=0):
     hist_proba = calcula_probabilidade_histograma(histograma, num_pixels)
     probabilidade_acumulada = calcula_probabilidade_acumulada(hist_proba)
     novo_valor = calcular_novo_valor_pixel(probabilidade_acumulada)
-    if isRGB == 0:
-        imagem = equalizar_histograma(imagem.copy(), novo_valor, isRGB, ind)
-    else:
-        imagem = equalizar_histograma(imagem.copy(), novo_valor, isRGB, ind)
+    imagem = equalizar_histograma(imagem.copy(), novo_valor, isRGB, ind)
     return imagem
 
 
@@ -113,6 +118,10 @@ def histograma(imagem, mostraHistograma, equalizar, isRGB):
         histogramar = inicia_histograma()
         histogramag = inicia_histograma()
         histogramab = inicia_histograma()
+        if mostraHistograma in (0, 1):
+            histogramar = conta_intensidade_pixels(histogramar, imagem[:, :, 0])
+            histogramag = conta_intensidade_pixels(histogramag, imagem[:, :, 1])
+            histogramab = conta_intensidade_pixels(histogramab, imagem[:, :, 2])
         if mostraHistograma == 2:
             histogramar = conta_intensidade_pixels(histogramar, imagem[:, :, 0])
         if mostraHistograma == 3:
@@ -134,6 +143,10 @@ def histograma(imagem, mostraHistograma, equalizar, isRGB):
                 histogramar = inicia_histograma()
                 histogramag = inicia_histograma()
                 histogramab = inicia_histograma()
+                if mostraHistograma == 1:
+                    histogramar = conta_intensidade_pixels(histogramar, imagem[:, :, 0])
+                    histogramag = conta_intensidade_pixels(histogramag, imagem[:, :, 1])
+                    histogramab = conta_intensidade_pixels(histogramab, imagem[:, :, 2])
                 if mostraHistograma == 2:
                     histogramar = conta_intensidade_pixels(histogramar, imagem[:, :, 0])
                 if mostraHistograma == 3:
