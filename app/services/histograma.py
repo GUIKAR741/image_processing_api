@@ -22,12 +22,20 @@ def conta_intensidade_pixels(hist, img):
     return hist
 
 
-def plot_hist(hist):
+def plot_hist(hist, espaco):
     """."""
     figure = plt.figure(figsize=(8, 6))
     axis = figure.add_subplot(1, 1, 1)
-    axis.bar(hist.keys(), list(map(lambda a: a / 255, hist.values())), color="red")
-    axis.plot(list(range(0, 256)), list(range(0, 256)), color="black")
+    histValues = list(map(lambda a: a / 255, hist.values()))
+    for i in espaco:
+        for j in range(i[0], i[1] + 1):
+            histValues[j] = i[2]
+    axis.bar(hist.keys(), histValues, color="red")
+    lineY = list(range(0, 256))
+    for i in espaco:
+        for j in range(i[0], i[1] + 1):
+            lineY[j] = i[2]
+    axis.plot(list(range(0, 256)), lineY, color="black")
     axis.set_xlabel("Níveis intensidade")
     axis.set_xlim([0, 255])
     axis.set_ylim([0, 255])
@@ -108,9 +116,34 @@ def processa_equalizacao(imagem, histograma, isRGB=0, ind=0):
     return imagem
 
 
-def histograma(imagem, mostraHistograma, equalizar, isRGB):
+def processa_espaco(imagem, histograma, espaco):
     """."""
-    if isRGB == 0:
+    from pprint import pprint
+    valores_modificar = {}
+    for i in espaco:
+        for j in range(i[0], i[1] + 1):
+            valores_modificar[str(j)] = i[2]
+    for row in range(imagem.shape[0]):
+        for column in range(imagem.shape[1]):
+            if str(int(imagem[row][column])) in valores_modificar.keys():
+                imagem[row][column] = valores_modificar[str(int(imagem[row][column]))]
+    # num_pixels = imagem.shape[0] * imagem.shape[1]
+    # hist_proba = calcula_probabilidade_histograma(histograma, num_pixels)
+    # probabilidade_acumulada = calcula_probabilidade_acumulada(hist_proba)
+    # novo_valor = calcular_novo_valor_pixel(probabilidade_acumulada)
+    # imagem = equalizar_histograma(imagem.copy(), novo_valor, isRGB, ind)
+    return imagem
+
+
+def histograma(imagem, mostraHistograma, equalizar, isRGB, espaco):
+    """."""
+    if espaco != None:
+        isRGB = 0
+        imagem = cv2.cvtColor(imagem, cv2.COLOR_BGR2GRAY)
+        histograma = inicia_histograma()
+        histograma = conta_intensidade_pixels(histograma, imagem)
+        processa_espaco(imagem, histograma, espaco)
+    elif isRGB == 0:
         imagem = cv2.cvtColor(imagem, cv2.COLOR_BGR2GRAY)
         histograma = inicia_histograma()
         histograma = conta_intensidade_pixels(histograma, imagem)
@@ -129,7 +162,7 @@ def histograma(imagem, mostraHistograma, equalizar, isRGB):
         if mostraHistograma == 4:
             histogramab = conta_intensidade_pixels(histogramab, imagem[:, :, 2])
 
-    if equalizar > 0:
+    if equalizar > 0 and espaco == None:
         if isRGB == 0:
             imagem = processa_equalizacao(imagem, histograma, isRGB)
             if mostraHistograma > 0:
@@ -156,11 +189,12 @@ def histograma(imagem, mostraHistograma, equalizar, isRGB):
 
     if mostraHistograma > 0:
         if isRGB == 0:
-            f = plot_hist(histograma)
+            f = plot_hist(histograma, espaco)
         else:
             f = plot_hist_rgb(histogramar, histogramag, histogramab)
         output = io.BytesIO()
         FigureCanvas(f).print_png(output)
         img = Image.open(output)
         imagem = np.array(img)
+    # elif espaco != None:
     return imagem

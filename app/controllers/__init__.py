@@ -21,6 +21,7 @@ from ..services.gamma_correction import gammaCorrection
 from ..services.convolucao import convolucao
 from ..services.histograma import histograma
 from ..services.sepia import sepia
+from ..services.fourrier import fourrierManual, fourrierFiltros
 from ..services.chromakey import chromakey
 from ..services.rotacao import rotacao
 from ..services.escala import escala
@@ -135,6 +136,130 @@ def sepiaRoute():
     img = cv2.imdecode(nparr, cv2.IMREAD_COLOR)
 
     img = sepia(img)
+
+    _, buffer = cv2.imencode(f'.{imagem.filename.split(".")[-1]}', img)
+    response = make_response(buffer.tobytes())
+    response.headers['Content-Type'] = imagem.mimetype
+    return response
+
+
+@index.route('/api/fourrierManual', methods=['POST'])
+def fourrierManualRoute():
+    """."""
+    parser = RequestParser()
+    parser.add_argument(
+        "imagem",
+        type=FileStorage,
+        help='Arquivo deve ser enviado!',
+        location='files',
+        required=True
+    )
+    parser.add_argument(
+        "mostraTransformada",
+        type=int,
+        default=0
+    )
+    parser.add_argument(
+        "clip",
+        type=int,
+        default=255
+    )
+    parser.add_argument(
+        "espaco",
+    )
+    p = parser.parse_args()
+    imagem = p['imagem']
+    mostraTransformada = p["mostraTransformada"]
+    espaco = p["espaco"]
+    clip = p["clip"]
+    # converte string de dados da imagem para uint8
+    nparr = np.fromstring(imagem.read(), np.uint8)
+    # decodifica imagem
+    img = cv2.imdecode(nparr, cv2.IMREAD_COLOR)
+    try:
+        if espaco != None:
+            espaco = loads(espaco)
+            if len(espaco) == 0:
+                return jsonify({"erro": "Todos intervalos devem ter tamanho 4!"})
+            for i in espaco:
+                dim = img.shape
+                if len(i) != 4:
+                    return jsonify({"erro": "Todos intervalos devem ter tamanho 4!"})
+                if i[0] < 0 or i[0] > dim[0] or i[1] < 0 or i[1] > dim[0] or \
+                        i[2] < 0 or i[2] > dim[1] or i[3] < 0 or i[3] > dim[1]:
+                    return jsonify({"erro": f"Todos valores devem ser menores que as dimensões da imagem {dim[0]}x{dim[1]}!"})
+                if i[0] > i[1]:
+                    return jsonify({"erro": "Primeiro valor deve ser menor ou igual ao segundo!"})
+    except Exception:
+        return jsonify({"erro": "Erro ao ler json"})
+
+    img = fourrierManual(img, mostraTransformada, espaco, clip)
+
+    _, buffer = cv2.imencode(f'.{imagem.filename.split(".")[-1]}', img)
+    response = make_response(buffer.tobytes())
+    response.headers['Content-Type'] = imagem.mimetype
+    return response
+
+
+@index.route('/api/fourrierFiltros', methods=['POST'])
+def fourrierFiltrosRoute():
+    """."""
+    parser = RequestParser()
+    parser.add_argument(
+        "imagem",
+        type=FileStorage,
+        help='Arquivo deve ser enviado!',
+        location='files',
+        required=True
+    )
+    parser.add_argument(
+        "mostraTransformada",
+        type=int,
+        default=0
+    )
+    parser.add_argument(
+        "clip",
+        type=int,
+        default=255
+    )
+    parser.add_argument(
+        "tipo",
+        type=int,
+    )
+    parser.add_argument(
+        "raio",
+        type=int,
+    )
+    parser.add_argument(
+        "raioInterno",
+        type=int,
+    )
+    parser.add_argument(
+        "sigma",
+        type=int,
+    )
+    p = parser.parse_args()
+    imagem = p['imagem']
+    mostraTransformada = p["mostraTransformada"]
+    clip = p["clip"]
+    tipo = p["tipo"]
+    raio = p["raio"]
+    sigma = p["sigma"]
+    raioInterno = p["raioInterno"]
+    # converte string de dados da imagem para uint8
+    nparr = np.fromstring(imagem.read(), np.uint8)
+    # decodifica imagem
+    img = cv2.imdecode(nparr, cv2.IMREAD_COLOR)
+
+    img = fourrierFiltros(
+        img,
+        mostraTransformada,
+        clip,
+        tipo,
+        raio,
+        sigma,
+        raioInterno
+    )
 
     _, buffer = cv2.imencode(f'.{imagem.filename.split(".")[-1]}', img)
     response = make_response(buffer.tobytes())
@@ -426,18 +551,35 @@ def histogramaRoute():
         type=int,
         default=0
     )
+    parser.add_argument(
+        "espaco",
+    )
     p = parser.parse_args()
     imagem = p['imagem']
     mostraHistograma = p['mostraHistograma']
     equalizar = p['equalizar']
     isRGB = p['isRGB']
-
+    espaco = p["espaco"]
+    try:
+        if espaco != None:
+            espaco = loads(espaco)
+            if len(espaco) == 0:
+                return jsonify({"erro": "Todos intervalos devem ter tamanho 3!"})
+            for i in espaco:
+                if len(i) != 3:
+                    return jsonify({"erro": "Todos intervalos devem ter tamanho 3!"})
+                if i[0] < 0 or i[0] > 255 or i[1] < 0 or i[1] > 255 or i[2] < 0 or i[2] > 255:
+                    return jsonify({"erro": "Todos valores devem estar no intervalo [0, 255]!"})
+                if i[0] > i[1]:
+                    return jsonify({"erro": "Primeiro valor deve ser menor ou igual ao segundo!"})
+    except Exception:
+        return jsonify({"erro": "Erro ao ler json"})
     # converte string de dados da imagem para uint8
     nparr = np.fromstring(imagem.read(), np.uint8)
     # decodifica imagem
     img = cv2.imdecode(nparr, cv2.IMREAD_COLOR)
 
-    img = histograma(img, mostraHistograma, equalizar, isRGB)
+    img = histograma(img, mostraHistograma, equalizar, isRGB, espaco)
 
     _, buffer = cv2.imencode(f'.{imagem.filename.split(".")[-1]}', img)
     response = make_response(buffer.tobytes())
