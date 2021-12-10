@@ -5,8 +5,8 @@ import numpy as np
 
 def noramalizaImagem(img):
     """."""
-    img = img.copy()
-    img[img < 0] = 0
+    img = img - img.min()
+    img = img / img.max()
     return img
 
 
