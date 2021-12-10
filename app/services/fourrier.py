@@ -139,3 +139,23 @@ def fourrierManual(imagem, mostraTransformada, espaco, clip):
         it = it / it.max()
         it = it[0:imagemDobrada.shape[0], 0:imagemDobrada.shape[1]]
     return it * 255
+
+
+def fourrier(imagem):
+    """."""
+    imagem = cv2.cvtColor(imagem, cv2.COLOR_BGR2GRAY)
+    if imagem.shape[0] > 50 or imagem.shape[1] > 50:
+        imagem = cv2.resize(imagem, (50, 50))
+    h = imagem.shape[0]
+    w = imagem.shape[1]
+    imagem_saida = np.zeros((h, w), complex)
+    for m in range(0, h):
+        for n in range(0, w):
+            for x in range(0, h):
+                for y in range(0, w):
+                    imagem_saida[m][n] += imagem[x][y] * np.exp(-1j * 2 * math.pi * (m * x / h + n * y / w))
+    imagem_saida = np.fft.fftshift(imagem_saida)
+    imagem_saida = np.abs(imagem_saida)
+    imagem_saida = imagem_saida - imagem_saida.min()
+    imagem_saida = imagem_saida / imagem_saida.max()
+    return imagem_saida * 255

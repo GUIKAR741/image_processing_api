@@ -3,7 +3,7 @@ import cv2
 import numpy as np
 
 
-def noramalizaImagem(img):
+def normalizaImagem(img):
     """."""
     img = img - img.min()
     img = img / img.max()
@@ -63,4 +63,4 @@ def convolucao(imagem, matriz, normaliza=0, func=None):
         imagem = aplicaConvolucao(imagem, matriz)
     else:
         imagem = aplicaConvolucao(imagem, matriz, func)
-    return noramalizaImagem(imagem) * 255 if normaliza == 0 else imagem
+    return normalizaImagem(imagem) * 255 if normaliza == 0 else imagem

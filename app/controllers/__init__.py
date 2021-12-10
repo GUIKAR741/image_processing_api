@@ -21,7 +21,7 @@ from ..services.gamma_correction import gammaCorrection
 from ..services.convolucao import convolucao
 from ..services.histograma import histograma
 from ..services.sepia import sepia
-from ..services.fourrier import fourrierManual, fourrierFiltros
+from ..services.fourrier import fourrierManual, fourrierFiltros, fourrier
 from ..services.chromakey import chromakey
 from ..services.rotacao import rotacao
 from ..services.escala import escala
@@ -259,6 +259,34 @@ def fourrierFiltrosRoute():
         raio,
         sigma,
         raioInterno
+    )
+
+    _, buffer = cv2.imencode(f'.{imagem.filename.split(".")[-1]}', img)
+    response = make_response(buffer.tobytes())
+    response.headers['Content-Type'] = imagem.mimetype
+    return response
+
+
+@index.route('/api/fourrier', methods=['POST'])
+def fourrierRoute():
+    """."""
+    parser = RequestParser()
+    parser.add_argument(
+        "imagem",
+        type=FileStorage,
+        help='Arquivo deve ser enviado!',
+        location='files',
+        required=True
+    )
+    p = parser.parse_args()
+    imagem = p['imagem']
+    # converte string de dados da imagem para uint8
+    nparr = np.fromstring(imagem.read(), np.uint8)
+    # decodifica imagem
+    img = cv2.imdecode(nparr, cv2.IMREAD_COLOR)
+
+    img = fourrier(
+        img
     )
 
     _, buffer = cv2.imencode(f'.{imagem.filename.split(".")[-1]}', img)
