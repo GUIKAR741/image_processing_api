@@ -88,21 +88,23 @@ def fourrierFiltros(
             disco = disco * disco2
             it = it * ((1 - disco) if tipo == 5 else disco)
     elif tipo == 7 or tipo == 8:
-        if raio != None and sigma != None and raio > 0:
+        if raio != None and sigma != None and raioInterno != None and \
+                raio > 0 and raioInterno > 0 and raioInterno < raio:
             kernel = gaussian_kernel(sigma, raio * 2)
             kernel = kernel / kernel.max()
-            kernel2 = gaussian_kernel(sigma, raio)
-            kernel2 = 1 - (kernel2 / kernel2.max())
+            y, x = np.ogrid[-raioInterno:raioInterno + 1,
+                            -raioInterno:raioInterno + 1]
+            disk = x**2 + y**2 <= raioInterno**2
+            disk = 1 - disk.astype(float)
 
             kernelAplicado = np.zeros(imagem.shape)
             kernelAplicado[imagem.shape[0] // 2 - raio:imagem.shape[0] // 2 + raio,
                            imagem.shape[1] // 2 - raio:imagem.shape[1] // 2 + raio] = kernel
             kernelAplicado1 = np.ones(imagem.shape)
-            kernelAplicado1[imagem.shape[0] // 2 - (raio // 2):
-                            imagem.shape[0] // 2 + (raio // 2),
-                            imagem.shape[1] // 2 - (raio // 2):
-                            imagem.shape[1] // 2 + (raio // 2)] = kernel2
-
+            kernelAplicado1[imagem.shape[0] // 2 - raioInterno:
+                            imagem.shape[0] // 2 + raioInterno + 1,
+                            imagem.shape[1] // 2 - raioInterno:
+                            imagem.shape[1] // 2 + raioInterno + 1] = disk
             kernelAplicado = kernelAplicado * kernelAplicado1
             it = it * ((1 - kernelAplicado) if tipo == 7 else kernelAplicado)
     if mostraTransformada == 0:

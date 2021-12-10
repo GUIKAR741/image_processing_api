@@ -3,66 +3,64 @@ import cv2
 import numpy as np
 
 
-def negative_to_zero(img: np.array) -> np.array:
+def noramalizaImagem(img):
     """."""
     img = img.copy()
     img[img < 0] = 0
     return img
 
 
-def get_padding_width_per_side(kernel_size: int) -> int:
+def calculaTamanhoPaddingPorLado(kernel_size):
     """."""
-    # Simple integer division
     return kernel_size // 2
 
 
-def add_padding_to_image(img: np.array, padding_width: int) -> np.array:
+def adicionaPaddingNaImagem(img, padding_width):
     """."""
-    # Array of zeros of shape (img + padding_width)
+    # Array de zeros nas dimensões da imagem mais padding (img + padding_width)
     img_with_padding = np.zeros(shape=(
-        # Multiply with two because we need padding on all sides
+        # Multiplica Padding por 2 para adicionar padding em todos lados
         img.shape[0] + padding_width * 2,
         img.shape[1] + padding_width * 2
     ))
 
-    # Change the inner elements
-    # For example, if img.shape = (224, 224), and img_with_padding.shape = (226, 226)
-    # keep the pixel wide padding on all sides, but change the other values to be the same as img
+    # Adiciona imagem original na imagem com padding
     img_with_padding[padding_width:-padding_width,
                      padding_width:-padding_width] = img
 
     return img_with_padding
 
 
-def convolve(img: np.array, kernel: np.array) -> np.array:
+def aplicaConvolucao(img, kernel, funcConv=lambda m, k: np.sum(np.multiply(m, k))):
     """."""
-    pad = get_padding_width_per_side(len(kernel))
-    # To simplify things
+    pad = calculaTamanhoPaddingPorLado(len(kernel))
+    # quantidade de Linhas da Imagem
     k = kernel.shape[0]
 
-    # 2D array of zeros
+    # Array do tamanho original da imagem de Zeros
     convolved_img = np.zeros(shape=(img.shape[0] - (pad * 2), img.shape[1] - (pad * 2)))
-    # Iterate over the rows
+
     for i in range(convolved_img.shape[0]):
-        # Iterate over the columns
         for j in range(convolved_img.shape[1]):
-            # img[i, j] = individual pixel value
-            # Get the current matrix
+            # Pega a Matriz para calcular a convolução
             mat = img[i:i + k, j:j + k]
 
-            # Apply the convolution - element-wise multiplication and summation of the result
-            # Store the result to i-th row and j-th column of our convolved_img array
-            convolved_img[i, j] = np.sum(np.multiply(mat, kernel))
+            # Aplica a convolução - multiplica elemento a elemento e soma do resultado
+            # Armazene o resultado na linha i e coluna j da matriz convolved_img
+            convolved_img[i, j] = funcConv(mat, kernel)
 
     return convolved_img
 
 
-def convolucao(imagem, matriz, normaliza=0):
+def convolucao(imagem, matriz, normaliza=0, func=None):
     """."""
     imagem = cv2.cvtColor(imagem, cv2.COLOR_BGR2GRAY) / 255
-    imagem = add_padding_to_image(
+    imagem = adicionaPaddingNaImagem(
         img=imagem,
-        padding_width=get_padding_width_per_side(len(matriz))
+        padding_width=calculaTamanhoPaddingPorLado(len(matriz))
     )
-    imagem = convolve(imagem, matriz)
-    return negative_to_zero(imagem) * 255 if normaliza == 0 else imagem
+    if func == None:
+        imagem = aplicaConvolucao(imagem, matriz)
+    else:
+        imagem = aplicaConvolucao(imagem, matriz, func)
+    return noramalizaImagem(imagem) * 255 if normaliza == 0 else imagem

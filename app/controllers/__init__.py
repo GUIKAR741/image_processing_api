@@ -27,7 +27,7 @@ from ..services.rotacao import rotacao
 from ..services.escala import escala
 from ..services.laplaciano import laplaciano
 from ..services.sobel import sobel
-from ..services.median import median
+from ..services.filtersConvolutionals import mean, geometric, harmonic, contraHarmonic
 from ..services.estenografia import (
     estenografiaLSB,
     estenografiaLSBDecrypt,
@@ -784,8 +784,8 @@ def sobelRoute():
     return response
 
 
-@index.route('/api/median', methods=['POST'])
-def medianRoute():
+@index.route('/api/mean', methods=['POST'])
+def meanRoute():
     """."""
     parser = RequestParser()
     parser.add_argument(
@@ -812,7 +812,121 @@ def medianRoute():
     # decodifica imagem
     img = cv2.imdecode(nparr, cv2.IMREAD_COLOR)
 
-    img = median(img, tamanho)
+    img = mean(img, tamanho)
+
+    _, buffer = cv2.imencode(f'.{imagem.filename.split(".")[-1]}', img)
+    response = make_response(buffer.tobytes())
+    response.headers['Content-Type'] = imagem.mimetype
+    return response
+
+
+@index.route('/api/geometric', methods=['POST'])
+def geometricRoute():
+    """."""
+    parser = RequestParser()
+    parser.add_argument(
+        "imagem",
+        type=FileStorage,
+        help='Arquivo deve ser enviado!',
+        location='files',
+        required=True
+    )
+    parser.add_argument(
+        "tamanho",
+        type=int,
+        default=0
+    )
+    p = parser.parse_args()
+    imagem = p['imagem']
+    tamanho = p['tamanho']
+    if tamanho % 2 == 0:
+        return jsonify({
+            "status": "Tamanho deve ser impar!",
+        })
+    # converte string de dados da imagem para uint8
+    nparr = np.fromstring(imagem.read(), np.uint8)
+    # decodifica imagem
+    img = cv2.imdecode(nparr, cv2.IMREAD_COLOR)
+
+    img = geometrica(img, tamanho)
+
+    _, buffer = cv2.imencode(f'.{imagem.filename.split(".")[-1]}', img)
+    response = make_response(buffer.tobytes())
+    response.headers['Content-Type'] = imagem.mimetype
+    return response
+
+
+@index.route('/api/harmonic', methods=['POST'])
+def harmonicRoute():
+    """."""
+    parser = RequestParser()
+    parser.add_argument(
+        "imagem",
+        type=FileStorage,
+        help='Arquivo deve ser enviado!',
+        location='files',
+        required=True
+    )
+    parser.add_argument(
+        "tamanho",
+        type=int,
+        default=0
+    )
+    p = parser.parse_args()
+    imagem = p['imagem']
+    tamanho = p['tamanho']
+    if tamanho % 2 == 0:
+        return jsonify({
+            "status": "Tamanho deve ser impar!",
+        })
+    # converte string de dados da imagem para uint8
+    nparr = np.fromstring(imagem.read(), np.uint8)
+    # decodifica imagem
+    img = cv2.imdecode(nparr, cv2.IMREAD_COLOR)
+
+    img = harmonic(img, tamanho)
+
+    _, buffer = cv2.imencode(f'.{imagem.filename.split(".")[-1]}', img)
+    response = make_response(buffer.tobytes())
+    response.headers['Content-Type'] = imagem.mimetype
+    return response
+
+
+@index.route('/api/contraHarmonic', methods=['POST'])
+def contraHarmonicRoute():
+    """."""
+    parser = RequestParser()
+    parser.add_argument(
+        "imagem",
+        type=FileStorage,
+        help='Arquivo deve ser enviado!',
+        location='files',
+        required=True
+    )
+    parser.add_argument(
+        "tamanho",
+        type=int,
+        default=0
+    )
+    parser.add_argument(
+        "q",
+        type=int,
+        required=True
+    )
+    p = parser.parse_args()
+    imagem = p['imagem']
+    tamanho = p['tamanho']
+    q = p['q']
+    if tamanho % 2 == 0:
+        return jsonify({
+            "status": "Tamanho deve ser impar!",
+        })
+    # converte string de dados da imagem para uint8
+    nparr = np.fromstring(imagem.read(), np.uint8)
+    # decodifica imagem
+    img = cv2.imdecode(nparr, cv2.IMREAD_COLOR)
+
+    img = contraHarmonic(img, tamanho, q)
 
     _, buffer = cv2.imencode(f'.{imagem.filename.split(".")[-1]}', img)
     response = make_response(buffer.tobytes())
