@@ -27,14 +27,16 @@ def plot_hist(hist, espaco):
     figure = plt.figure(figsize=(8, 6))
     axis = figure.add_subplot(1, 1, 1)
     histValues = list(map(lambda a: a / 255, hist.values()))
-    for i in espaco:
-        for j in range(i[0], i[1] + 1):
-            histValues[j] = i[2]
+    if espaco != None:
+        for i in espaco:
+            for j in range(i[0], i[1] + 1):
+                histValues[j] = i[2]
     axis.bar(hist.keys(), histValues, color="red")
     lineY = list(range(0, 256))
-    for i in espaco:
-        for j in range(i[0], i[1] + 1):
-            lineY[j] = i[2]
+    if espaco != None:
+        for i in espaco:
+            for j in range(i[0], i[1] + 1):
+                lineY[j] = i[2]
     axis.plot(list(range(0, 256)), lineY, color="black")
     axis.set_xlabel("Níveis intensidade")
     axis.set_xlim([0, 255])
@@ -120,9 +122,10 @@ def processa_espaco(imagem, histograma, espaco):
     """."""
     from pprint import pprint
     valores_modificar = {}
-    for i in espaco:
-        for j in range(i[0], i[1] + 1):
-            valores_modificar[str(j)] = i[2]
+    if espaco != None:
+        for i in espaco:
+            for j in range(i[0], i[1] + 1):
+                valores_modificar[str(j)] = i[2]
     for row in range(imagem.shape[0]):
         for column in range(imagem.shape[1]):
             if str(int(imagem[row][column])) in valores_modificar.keys():
@@ -196,5 +199,4 @@ def histograma(imagem, mostraHistograma, equalizar, isRGB, espaco):
         FigureCanvas(f).print_png(output)
         img = Image.open(output)
         imagem = np.array(img)
-    # elif espaco != None:
     return imagem

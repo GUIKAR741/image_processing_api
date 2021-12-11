@@ -39,14 +39,6 @@ def laplaciano(imagem, bordas):
                 [1, -8, 1],
                 [1, 1, 1],
             ]))
-    elif bordas == 4:
-        imagem = imagem_original + convolucao(
-            imagem,
-            np.array([
-                [1, 1, 1],
-                [1, -8, 1],
-                [1, 1, 1],
-            ]))
     else:
         highBoost = imagem_original - convolucao(
             imagem,
