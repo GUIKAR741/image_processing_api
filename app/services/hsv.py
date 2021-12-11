@@ -30,6 +30,12 @@ def hsv(imagem):
     return imagem
 
 
+def hsvCV2(imagem):
+    """."""
+    imagem = cv2.cvtColor(imagem, cv2.COLOR_BGR2HSV)
+    return imagem
+
+
 def rgbTohsv(r, g, b):
     """."""
     r, g, b = r / 255, g / 255, b / 255

@@ -15,7 +15,7 @@ from ..services.grayscalePonderado import grayscalePonderado
 from ..services.grayscaleMedia import grayscaleMedia
 from ..services.blackAndWhite import blackAndWhite
 from ..services.negativo import negativo
-from ..services.hsv import hsv, rgbTohsv
+from ..services.hsv import hsv, rgbTohsv, hsvCV2
 from ..services.esc_log import escalaLogaritmica
 from ..services.gamma_correction import gammaCorrection
 from ..services.convolucao import convolucao
@@ -400,6 +400,32 @@ def hsvRoute():
     img = cv2.imdecode(nparr, cv2.IMREAD_COLOR)
 
     img = hsv(img)
+
+    _, buffer = cv2.imencode(f'.{imagem.filename.split(".")[-1]}', img)
+    response = make_response(buffer.tobytes())
+    response.headers['Content-Type'] = imagem.mimetype
+    return response
+
+
+@index.route('/api/hsvCV2', methods=['POST'])
+def hsvCV2Route():
+    """."""
+    parser = RequestParser()
+    parser.add_argument(
+        "imagem",
+        type=FileStorage,
+        help='Arquivo deve ser enviado!',
+        location='files',
+        required=True
+    )
+    p = parser.parse_args()
+    imagem = p['imagem']
+    # converte string de dados da imagem para uint8
+    nparr = np.fromstring(imagem.read(), np.uint8)
+    # decodifica imagem
+    img = cv2.imdecode(nparr, cv2.IMREAD_COLOR)
+
+    img = hsvCV2(img)
 
     _, buffer = cv2.imencode(f'.{imagem.filename.split(".")[-1]}', img)
     response = make_response(buffer.tobytes())
