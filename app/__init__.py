@@ -1,6 +1,7 @@
 """Modulo Principal do Projeto."""
 from decouple import config
 from flask import Flask
+from flask_cors import CORS
 
 
 def start_app() -> Flask:
@@ -9,6 +10,11 @@ def start_app() -> Flask:
 
     app.config.from_object(
         "app.config." + config('FLASK_ENV', default='production', cast=str)
+    )
+
+    CORS(
+        app,
+        supports_credentials=True
     )
 
     @app.errorhandler(404)
