@@ -902,7 +902,7 @@ def geometricRoute():
     # decodifica imagem
     img = cv2.imdecode(nparr, cv2.IMREAD_COLOR)
 
-    img = geometrica(img, tamanho)
+    img = geometric(img, tamanho)
 
     _, buffer = cv2.imencode(f'.{imagem.filename.split(".")[-1]}', img)
     response = make_response(buffer.tobytes())
@@ -964,7 +964,7 @@ def contraHarmonicRoute():
     )
     parser.add_argument(
         "q",
-        type=int,
+        type=float,
         required=True
     )
     p = parser.parse_args()
