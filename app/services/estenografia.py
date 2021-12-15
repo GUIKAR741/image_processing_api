@@ -39,12 +39,15 @@ def estenografiaLSB(imagem1, imagem2):
     imagem2 = np.array(imagem2, dtype=np.uint8)
     _, imagem2 = cv2.threshold(imagem2, 127, 1, cv2.THRESH_BINARY)
     resultado = imagem1 & ~1 | imagem2
+    cv2.imwrite("encript.png", resultado)
     return resultado
 
 
 def estenografiaLSBDecrypt(imagem1):
     """."""
-    return bitplanesDecrypt(imagem1)
+    imagem1 = bitplanesDecrypt(imagem1)
+    cv2.imwrite("decript.png", imagem1)
+    return imagem1
 
 
 def estenografia(imagem1, imagem2):
@@ -59,6 +62,7 @@ def estenografia(imagem1, imagem2):
                 v2 = format(imagem2[i][j][l], '08b')
                 v3 = v1[:4] + v2[:4]
                 imagem1[i][j][l] = int(v3, 2)
+    cv2.imwrite("encript.png", imagem1)
     return imagem1
 
 
@@ -71,4 +75,5 @@ def estenografiaDecrypt(imagem1):
                 v1 = format(imagem1[i][j][l], '08b')
                 v3 = v1[4:] + chr(random.randint(0, 1) + 48) * 4
                 imagem2[i][j][l] = int(v3, 2)
+    cv2.imwrite("decript.png", imagem2)
     return imagem2

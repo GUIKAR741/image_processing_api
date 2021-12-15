@@ -657,7 +657,6 @@ def estenografiaRoute():
         type=FileStorage,
         help='Arquivo deve ser enviado!',
         location='files',
-        required=True
     )
     parser.add_argument(
         "tipo",
@@ -667,15 +666,18 @@ def estenografiaRoute():
     )
     p = parser.parse_args()
     imagem1 = p['imagem1']
-    imagem2 = p['imagem2']
+    if p['imagem2'] != None:
+        imagem2 = p['imagem2']
     tipo = p["tipo"]
 
     # converte string de dados da imagem para uint8
     nparr1 = np.fromstring(imagem1.read(), np.uint8)
-    nparr2 = np.fromstring(imagem2.read(), np.uint8)
+    if p['imagem2'] != None:
+        nparr2 = np.fromstring(imagem2.read(), np.uint8)
     # decodifica imagem
     img1 = cv2.imdecode(nparr1, cv2.IMREAD_COLOR)
-    img2 = cv2.imdecode(nparr2, cv2.IMREAD_COLOR)
+    if p['imagem2'] != None:
+        img2 = cv2.imdecode(nparr2, cv2.IMREAD_COLOR)
 
     if tipo == 1:
         img = estenografiaLSB(img1, img2)
